@@ -115,5 +115,8 @@ If you cannot see the secrets directory or the `initialAdminPassword` file, foll
   ```
 - You can start/stop Jenkins via the **Services** management console in Windows.
 
+## Step-6: Jenkins Workspace
+
+```C:\ProgramData\Jenkins\.jenkins\workspace```
 
 * **
