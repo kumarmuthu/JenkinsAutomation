@@ -1,3 +1,6 @@
+__version__ = '2022.07.17.01'
+__author__ = 'Muthukumar Subramanian'
+
 from threading import Thread
 import threading
 import time
@@ -11,20 +14,15 @@ import ctypes
 from SubprocessUtility import SubprocessUtility
 
 
-
-__version__ = '2022.07.17.01'
-__author__ = 'Muthukumar Subramanian'
-
-
 class JenkinsUrlCheck:
     """
     Jenkins job class
     """
 
     def __init__(self):
-        self.base_login_url = 'http://localhost:8081'
-        self.username = 'admin'
-        self.API_token = '11abf2d2a5c6a26a75a6a69cacf9ef4d91'
+        self.base_login_url = 'http://localhost:8080'
+        self.username = 'muthu'
+        self.API_token = '11ce6f4b414f4c9859c6bf97d00c671598'
         # Session because we want to maintain the cookies
         self.session = requests.Session()
         self.session.headers[
@@ -38,12 +36,14 @@ class JenkinsUrlCheck:
         if re.search(r'JSESSIONID.*', str(self.cookies_dict.keys())):
             self.js_id = list(self.cookies_dict.values())[0]
         self.session.headers['Cookie'] = "JSESSIONID=" + self.js_id
-        self.job_url = self.base_login_url + '/job/Python_test' + '/api/json'
+        # Access all jobs instead of a specific job
+        self.job_url = self.base_login_url + '/api/json?tree=jobs[name,url]'  # Fetches all jobs
+        # self.job_url = self.base_login_url + '/job/GitHubPipeline' + '/api/json'
         self.build_url = ''
 
         # Logger
         self.formatter = logging.Formatter(fmt='%(asctime)s %(module)s,line: %(lineno)d %(levelname)8s | %(message)s',
-                                      datefmt='%Y/%m/%d %H:%M:%S')
+                                           datefmt='%Y/%m/%d %H:%M:%S')
         s1 = re.search(r'(.*).py', __file__)
         self.file_name = s1.group(1)
         logging.basicConfig(filename='%s.log' % (self.file_name),
@@ -73,7 +73,7 @@ class JenkinsUrlCheck:
         try:
             login_response = self.session.post(self.base_login_url, auth=HTTPBasicAuth(self.username, self.API_token))
         except Exception as Err:
-            s1 = re.search("HTTPConnectionPool.*:\s+(\W+WinError.*\w+)", str(Err))
+            s1 = re.search(r"HTTPConnectionPool.*:\s+(\W+WinError.*\w+)", str(Err))
             if s1:
                 self.log_obj.error(
                     "Error: POST - Observed exception while accessing the URL, Exception: {}".format(s1.group(1)))
@@ -86,7 +86,6 @@ class JenkinsUrlCheck:
             else:
                 self.log_obj.error("Error: Login is failed, Status code: {}".format(login_response))
         return False
-
 
     def jenkins_url_get(self, url_check_only=None):
         """
@@ -148,7 +147,7 @@ class JenkinsUrlCheck:
                 self.log_obj.info(f"last build fail:{last_build_fail}")
                 return True
         except Exception as Err1:
-            s1 = re.search("HTTPConnectionPool.*:\s+(\W+WinError.*\w+)", str(Err1))
+            s1 = re.search(r"HTTPConnectionPool.*:\s+(\W+WinError.*\w+)", str(Err1))
             if s1:
                 self.log_obj.error(
                     "Error: GET - Observed exception while accessing the URL, Exception: {}".format(s1.group(1)))
@@ -162,16 +161,16 @@ class JenkinsUrlCheck:
         Jenkins process start from command prompt
         :return:
         """
-        jenkins_start_cmd = "java -jar jenkins.war start --httpPort=8081"
+        jenkins_start_cmd = "java -jar jenkins.war start --httpPort=8080"
         # jenkins_start_cmd = "net start jenkins"
         # jenkins_start_cmd = ['runas', '/noprofile', '/user:Administrator', 'cmd.exe']
-        # jenkins_start_cmd = "java -jar jenkins.war --ajp13Port=-1 --httpPort=8081"
+        # jenkins_start_cmd = "java -jar jenkins.war --ajp13Port=-1 --httpPort=8080"
         execute_cmd = ["cmd.exe", "/c", "{}".format(jenkins_start_cmd)]
         ret_code = None
         try:
             sub_process_obj = SubprocessUtility(self.log_obj)
             ret_code = sub_process_obj.execute_subprocess_cmd(exec_cmd=jenkins_start_cmd,
-                                                                cwd='C:\\Program Files\\Jenkins')
+                                                              cwd='C:\\Program Files\\Jenkins')
         except Exception as Err:
             self.log_obj.error("Error: Observed exception - func: jenkins_process_start(),"
                                "Exception: {}".format(Err))
@@ -183,6 +182,7 @@ class ThreadWithReturnValue(Thread):
     """
     Multi-processor for Jenkins
     """
+
     def __init__(self, group=None, target=None, name=None, interval=None, args=(), kwargs=None, *, daemon=None):
         Thread.__init__(self, group, target, name, args, kwargs, daemon=daemon)
         self.interval = interval
@@ -290,11 +290,11 @@ def call_main():
 
     # TODO
     # slave machine up
-    # java -jar agent.jar -jnlpUrl http://localhost:8081/computer/Slave%5Fmachine/jenkins-agent.jnlp -workDir "F:\Python"
-    # java -jar agent.jar -jnlpUrl http://localhost:8081/computer/SLAVE/jenkins-agent.jnlp
+    # java -jar agent.jar -jnlpUrl http://localhost:8080/computer/Slave%5Fmachine/jenkins-agent.jnlp -workDir "F:\Python"
+    # java -jar agent.jar -jnlpUrl http://localhost:8080/computer/SLAVE/jenkins-agent.jnlp
     # -secret ecdfea7b31cbce0a1c269cd9e07fcf748adda67ee39b27561c4cab2508082153 -workDir "F:\Python"
     # ret_slave_ma = sub_obj.execute_subprocess_cmd(
-    #     "javaws http://localhost:8081/computer/Slave%5Fmachine/jenkins-agent.jnlp",
+    #     "javaws http://localhost:8080/computer/Slave%5Fmachine/jenkins-agent.jnlp",
     #     cwd='C:\\Program Files\\Jenkins')
 
 
