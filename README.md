@@ -119,4 +119,33 @@ If you cannot see the secrets directory or the `initialAdminPassword` file, foll
 
 ```C:\ProgramData\Jenkins\.jenkins\workspace```
 
+## Step-7: Set the JENKINS_HOME Environment Variable
+- Make sure JENKINS_HOME is set to the directory where your existing Jenkins data is stored, 
+    such as "C:\Users\ADMIN\.jenkins". This will help Jenkins load your previous configurations.
+
+
+  ```shell
+  set JENKINS_HOME="C:\Users\ADMIN\.jenkins"
+  ```
+
+- Or, if you want it permanently, you can set it through System Properties:
+```
+   Go to Control Panel > System > Advanced system settings > Environment Variables. Under System variables,
+   click New and add JENKINS_HOME with the value "C:\Users\ADMIN\.jenkins".
+```
+
+## Step-8: Start Jenkins with jenkins.exe
+- You can start Jenkins using the .exe with this command to ensure it uses the JENKINS_HOME you set:
+    ```shell
+        "C:\Program Files\Jenkins\jenkins.exe" --httpPort=8080
+    ```
+
+## Step-9: Alternative Start Command
+- If the .exe option doesn’t load the existing configurations, try starting with jenkins.war while specifying JENKINS_HOME:
+
+    ```shell
+    java -Djenkins.home="C:\Users\ADMIN\.jenkins" -jar "C:\Program Files\Jenkins\jenkins.war" --httpPort=8080
+    ```
+
+
 * **
